@@ -875,13 +875,15 @@ function markCurrentWord(status) {
   // 前のタイマーを解除
   clearTimeout(classificationTimer);
 
-  // 約1秒後に選択表示を解除
+  // まず現在のカードに分類結果を表示
+  renderBook();
+  renderStudyCard();
+
+  // 450ミリ秒後に色を消して次のカードへ
   classificationTimer = setTimeout(() => {
     lastClassification = null;
-    renderStudyCard();
-  }, 1000);
-
-  saveBook();
+    saveBook();
+  }, 450);
 }
 
 // ------------------------------
