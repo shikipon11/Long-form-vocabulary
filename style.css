@@ -730,4 +730,106 @@ body.study-mode .flashcard {
     font-size: 10px;
   }
 }
+/* 品詞ごとの色分け */
+.pos-tag {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 750;
+  border: 1px solid transparent;
+}
 
+.pos-noun {
+  background: #e7efff;
+  color: #315a9b;
+  border-color: #c9d9f6;
+}
+
+.pos-verb {
+  background: #e5f5ed;
+  color: #24734d;
+  border-color: #bfe4cf;
+}
+
+.pos-adjective {
+  background: #fff0dc;
+  color: #a65b13;
+  border-color: #f3d4a9;
+}
+
+.pos-adverb {
+  background: #f1eaff;
+  color: #7045a3;
+  border-color: #d9c8f3;
+}
+
+.pos-preposition {
+  background: #e2f5f5;
+  color: #207477;
+  border-color: #bce3e3;
+}
+
+.pos-conjunction {
+  background: #ffe8ef;
+  color: #a33f66;
+  border-color: #f2c5d4;
+}
+
+.pos-pronoun {
+  background: #edf0ff;
+  color: #535ca5;
+  border-color: #cfd4f5;
+}
+
+.pos-article {
+  background: #f0f2f5;
+  color: #5e6675;
+  border-color: #d9dde4;
+}
+
+.pos-auxiliary {
+  background: #fff4d9;
+  color: #8a6500;
+  border-color: #f0dfa9;
+}
+
+.pos-proper {
+  background: #e8f1f7;
+  color: #315f7b;
+  border-color: #c8dce9;
+}
+
+.pos-phrase {
+  background: #fce9f7;
+  color: #914b83;
+  border-color: #efc8e5;
+}
+
+.pos-other {
+  background: #eef1f5;
+  color: #596579;
+  border-color: #d9dfe8;
+}
+
+/* 分類ボタンの選択表示 */
+.known-button.selected {
+  background: #28704a;
+  color: #fff;
+  box-shadow: 0 0 0 3px #bfe4cf;
+}
+
+.unknown-button.selected {
+  background: #ad4038;
+  color: #fff;
+  box-shadow: 0 0 0 3px #f3c6c2;
+}
+
+/* カードの分類結果表示 */
+.flashcard.classified-known {
+  background: linear-gradient(145deg, #e7f5ed, #cfeedd);
+  border-color: #65ad83;
+}
+
+.flashcard.classified-unknown {
+  background: linear-gradient(145deg, #fff0ee, #f9d8d4);
+  border-color: #d77a72;
+}
