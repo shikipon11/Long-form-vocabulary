@@ -14,6 +14,9 @@ let currentDeck = "all";
 let currentBookFilter = "all";
 let currentCardIndex = 0;
 let isFlipped = false;
+// 直前に選択した分類
+let lastClassification = null;
+let classificationTimer = null;
 
 // 仕分け取り消し用
 let classifyHistory = [];
@@ -696,6 +699,24 @@ document.querySelectorAll("[data-deck]").forEach(button => {
 function renderStudyCard() {
   const deck = getDeck();
   const done = classifiedThisSession.size;
+    // 分類ボタンとカードの選択状態を更新
+  $("flashcard").classList.remove(
+    "classified-known",
+    "classified-unknown"
+  );
+
+  $("markKnown").classList.remove("selected");
+  $("markUnknown").classList.remove("selected");
+
+  if (lastClassification === "known") {
+    $("flashcard").classList.add("classified-known");
+    $("markKnown").classList.add("selected");
+  }
+
+  if (lastClassification === "unknown") {
+    $("flashcard").classList.add("classified-unknown");
+    $("markUnknown").classList.add("selected");
+  }
 
   $("cardCounter").textContent =
     `${done} / ${sessionTotal} 完了`;
@@ -820,6 +841,18 @@ function markCurrentWord(status) {
   classifiedThisSession.add(getEntryKey(entry));
 
   isFlipped = false;
+
+  // 選択した分類を記録
+  lastClassification = status;
+
+  // 前のタイマーを解除
+  clearTimeout(classificationTimer);
+
+  // 約1秒後に選択表示を解除
+  classificationTimer = setTimeout(() => {
+    lastClassification = null;
+    renderStudyCard();
+  }, 1000);
 
   saveBook();
 }
