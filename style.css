@@ -569,3 +569,165 @@ footer {
     padding: 11px 4px;
   }
 }
+
+/* 新しいカード学習画面 */
+
+.study-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.study-heading h1 {
+  margin-bottom: 4px;
+}
+
+.study-heading p {
+  margin-top: 4px;
+}
+
+#undoClassify {
+  flex-shrink: 0;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+.study-progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 18px 0 8px;
+  color: #68738a;
+  font-size: 13px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #e9edf5;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  border-radius: 20px;
+  background: #5277bd;
+  transition: width .25s ease;
+}
+
+.study-panel {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.study-filters {
+  margin-bottom: 12px;
+}
+
+.flashcard {
+  min-height: 280px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
+  cursor: pointer;
+}
+
+.study-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.study-actions button {
+  width: 100%;
+  max-width: 300px;
+}
+
+.classify-actions button {
+  min-height: 58px;
+  font-size: 16px;
+  transition: transform .12s ease;
+}
+
+.classify-actions button:active {
+  transform: scale(.97);
+}
+
+.keyboard-hint {
+  text-align: center;
+  color: #8992a5;
+  font-size: 12px;
+  margin-top: 14px;
+}
+
+/* 学習中は画面をすっきりさせる */
+
+body.study-mode .top,
+body.study-mode footer {
+  display: none;
+}
+
+body.study-mode main {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+body.study-mode .study-panel {
+  min-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+body.study-mode .flashcard {
+  flex: 1;
+  min-height: 220px;
+  max-height: 420px;
+}
+
+/* スマートフォン */
+
+@media (max-width: 480px) {
+  .study-heading {
+    align-items: center;
+  }
+
+  .study-heading h1 {
+    font-size: 21px;
+  }
+
+  .study-heading .muted {
+    font-size: 12px;
+  }
+
+  .study-panel {
+    padding: 14px;
+  }
+
+  body.study-mode main {
+    width: calc(100% - 16px);
+    margin-top: 8px;
+  }
+
+  body.study-mode .study-panel {
+    min-height: calc(100dvh - 16px);
+    padding: 14px;
+  }
+
+  body.study-mode .flashcard {
+    min-height: 200px;
+  }
+
+  .classify-actions button {
+    min-height: 54px;
+    font-size: 14px;
+  }
+
+  .keyboard-hint {
+    font-size: 10px;
+  }
+}
+
