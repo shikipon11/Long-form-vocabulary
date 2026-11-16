@@ -282,25 +282,41 @@ $("copyPrompt").addEventListener("click", async () => {
 // ------------------------------
 
 function parseJson(raw) {
-  let cleaned = raw.trim()
+  // 前後の空白やコードフェンスを削除
+  let cleaned = String(raw ?? "").trim()
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```$/, "");
 
+  // スマートクォートを通常の引用符に変換
+  cleaned = cleaned
+    .replace(/[“”＂]/g, '"')
+    .replace(/[‘’]/g, "'");
+
+  // そのままJSONとして読み込む
   try {
     return JSON.parse(cleaned);
   } catch {}
 
+  // 前後に余計な文章がある場合、JSON部分だけを抽出
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");
 
   if (start >= 0 && end > start) {
-    return JSON.parse(
-      cleaned.slice(start, end + 1)
-    );
+    try {
+      return JSON.parse(
+        cleaned.slice(start, end + 1)
+      );
+    } catch {}
   }
 
+  // エラーを日本語で表示
   throw new Error(
-    "JSONを読み取れませんでした。JSON部分だけを貼り付けてください。"
+    "データを読み込めませんでした。\n\n" +
+    "次の点を確認してください。\n" +
+    "・JSON形式のデータを貼り付けているか\n" +
+    "・単語の名前や意味が正しく記述されているか\n" +
+    "・カッコやカンマが抜けていないか\n\n" +
+    "ChatGPTの回答をもう一度コピーして試してください。"
   );
 }
 
