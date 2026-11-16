@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7f8fc" />
+  <title>読めなかった長文から作る！単語帳</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand">📘 読めなかった長文から作る！単語帳</div>
+    <p>長文から単語を抽出して、自分だけの単語帳を作ろう。</p>
+  </header>
+
+  <main>
+    <nav class="main-nav">
+      <button class="nav-button active" data-target="createSection">単語を追加</button>
+      <button class="nav-button" data-target="studySection">カード学習</button>
+      <button class="nav-button" data-target="bookSection">単語一覧</button>
+    </nav>
+
+    <section id="createSection" class="page-section">
+      <section class="panel">
+        <div class="step">STEP 1</div>
+        <h1>長文の写真を用意</h1>
+        <p class="muted">写真を選ぶか、英文を直接貼り付けてください。</p>
+
+        <label class="upload">
+          <span>📷 写真を選択・撮影</span>
+          <input id="imageInput" type="file" accept="image/*" capture="environment" />
+        </label>
+
+        <img id="preview" class="preview hidden" alt="選択した長文のプレビュー" />
+
+        <label class="field-label" for="sourceText">英文（任意）</label>
+        <textarea id="sourceText" rows="5" placeholder="ここに英文を貼り付けることもできます。"></textarea>
+
+        <div class="actions">
+          <button id="makePrompt" class="primary">ChatGPT用プロンプトを作る</button>
+        </div>
+        <p class="note">※画像はChatGPTに手動で添付してください。</p>
+      </section>
+
+      <section class="panel">
+        <div class="step">STEP 2</div>
+        <h2>ChatGPTで単語を抽出</h2>
+        <p class="muted">プロンプトをコピーして、ChatGPTに画像と一緒に送信します。</p>
+        <textarea id="prompt" rows="10" placeholder="「ChatGPT用プロンプトを作る」を押すと、ここに表示されます。"></textarea>
+        <div class="actions wrap">
+          <button id="copyPrompt" class="secondary">プロンプトをコピー</button>
+          <a class="button-link" href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPTを開く ↗</a>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="step">STEP 3</div>
+        <h2>解析結果を取り込む</h2>
+        <p class="muted">ChatGPTの回答（JSON）を貼り付けてください。</p>
+        <textarea id="jsonInput" rows="9" placeholder='{"words":[{"word":"increase","meaning":"増加する","pos":"動詞","count":1}],"phrases":[]}'></textarea>
+        <div class="actions">
+          <button id="importJson" class="primary">単語を取り込む</button>
+        </div>
+        <p id="importMessage" class="message" aria-live="polite"></p>
+        <div id="importedResults" class="imported-results"></div>
+      </section>
+    </section>
+
+    <section id="studySection" class="page-section hidden">
+      <section class="panel">
+        <div class="step">FLASH CARD</div>
+        <h1>カード学習</h1>
+        <p class="muted">英単語を見て意味を考えたら、カードをめくって答えを確認しよう。</p>
+
+        <div class="study-filters">
+          <button class="filter-button active" data-deck="all">すべて</button>
+          <button class="filter-button" data-deck="unknown">わからない</button>
+          <button class="filter-button" data-deck="known">わかる</button>
+        </div>
+
+        <div class="card-counter" id="cardCounter">0 / 0</div>
+
+        <button id="flashcard" class="flashcard" type="button" aria-label="カードをめくる">
+          <span id="cardSide" class="card-side">ENGLISH</span>
+          <strong id="cardWord" class="card-word">単語がありません</strong>
+          <span id="cardMeaning" class="card-meaning hidden"></span>
+          <span id="cardHint" class="card-hint">タップして意味を確認</span>
+        </button>
+
+        <div class="study-actions">
+          <button id="prevCard" class="secondary">← 前へ</button>
+          <button id="flipCard" class="primary">カードをめくる</button>
+          <button id="nextCard" class="secondary">次へ →</button>
+        </div>
+
+        <div class="classify-actions">
+          <button id="markUnknown" class="unknown-button">わからない</button>
+          <button id="markKnown" class="known-button">わかる</button>
+        </div>
+        <p id="studyMessage" class="message"></p>
+      </section>
+    </section>
+
+    <section id="bookSection" class="page-section hidden">
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <div class="step">MY WORD BOOK</div>
+            <h1>単語一覧</h1>
+          </div>
+          <button id="clearBook" class="danger ghost">全削除</button>
+        </div>
+
+        <div class="book-stats">
+          <div><strong id="totalCount">0</strong><span>登録語数</span></div>
+          <div><strong id="unknownCount">0</strong><span>わからない</span></div>
+          <div><strong id="knownCount">0</strong><span>わかる</span></div>
+        </div>
+
+        <div class="book-filters">
+          <button class="filter-button active" data-book-filter="all">すべて</button>
+          <button class="filter-button" data-book-filter="unknown">わからない</button>
+          <button class="filter-button" data-book-filter="known">わかる</button>
+        </div>
+
+        <div id="wordList" class="word-grid"></div>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    データはこのブラウザ内に保存されます。別の端末・ブラウザとは自動同期されません。
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
