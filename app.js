@@ -507,7 +507,7 @@ function selectImported(entry, status, card) {
   // 色を見せてから次の単語へ
   setTimeout(() => {
     classifyImported(entry, status);
-  }, 400);
+  }, 200);
 }
 
 function classifyImported(entry, status) {
@@ -1001,7 +1001,7 @@ function markCurrentWord(status) {
       saveBook();
     }, 100);
 
-  }, 350);
+  }, 250);
 }
 // ------------------------------
 // 仕分けの取り消し
