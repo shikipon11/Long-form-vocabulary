@@ -355,8 +355,17 @@ $("importJson").addEventListener("click", () => {
 // 読み込んだ単語の仕分け
 // ------------------------------
 
+// ------------------------------
+// 読み込んだ単語の仕分け（1語ずつ表示）
+// ------------------------------
+
 function classifyImported(entry, status) {
   const index = findWordIndex(entry);
+
+  importedHistory.push({
+    entry: { ...entry },
+    previous: index >= 0 ? { ...words[index] } : null
+  });
 
   const savedEntry = {
     ...entry,
@@ -375,6 +384,24 @@ function classifyImported(entry, status) {
     words.unshift(savedEntry);
   }
 
+  importedIndex += 1;
+  saveBook();
+  renderImportedWords();
+}
+
+function undoImportedClassification() {
+  if (!importedHistory.length) return;
+
+  const previous = importedHistory.pop();
+  const index = findWordIndex(previous.entry);
+
+  if (previous.previous) {
+    if (index >= 0) words[index] = previous.previous;
+  } else if (index >= 0) {
+    words.splice(index, 1);
+  }
+
+  importedIndex = Math.max(0, importedIndex - 1);
   saveBook();
   renderImportedWords();
 }
@@ -389,66 +416,89 @@ function renderImportedWords() {
   heading.textContent = "読み込んだ単語を仕分け";
   container.appendChild(heading);
 
-  const description = document.createElement("p");
-  description.className = "muted";
-  description.textContent =
-    "意味を確認して、わかる・わからないを選んでください。";
+  const progressText = document.createElement("p");
+  progressText.className = "muted";
+  progressText.textContent = importedIndex >= importedWords.length
+    ? `${importedWords.length} / ${importedWords.length} 語 完了`
+    : `${importedIndex + 1} / ${importedWords.length} 語`;
+  container.appendChild(progressText);
 
-  container.appendChild(description);
+  const progressTrack = document.createElement("div");
+  progressTrack.className = "progress-track";
+  const progressBar = document.createElement("div");
+  progressBar.className = "progress-bar";
+  progressBar.style.width =
+    `${Math.min(100, (importedIndex / importedWords.length) * 100)}%`;
+  progressTrack.appendChild(progressBar);
+  container.appendChild(progressTrack);
 
-  const grid = document.createElement("div");
-  grid.className = "word-grid";
-
-  importedWords.forEach(entry => {
-    const index = findWordIndex(entry);
-    const saved = index >= 0 ? words[index] : null;
-
-    const card = document.createElement("article");
-    card.className = "word-card";
-
-    const statusText = saved
-      ? saved.status === "known"
-        ? "わかるに分類済み"
-        : "わからないに分類済み"
-      : "未分類";
-
-    card.innerHTML = `
-      <div class="word-title">
-        <strong>${escapeHtml(entry.word)}</strong>
-        <span class="tag">${escapeHtml(entry.pos)}</span>
-        ${entry.uncertain
-          ? '<span class="tag warning-tag">要確認</span>'
-          : ""}
-      </div>
-      <div class="meaning">${escapeHtml(entry.meaning)}</div>
-      <div class="detail">
-        出現回数：${entry.count}
-        ${entry.forms.length
-          ? " ／ 本文中の形：" +
-            escapeHtml(entry.forms.join(", "))
-          : ""}
-      </div>
-      <div class="detail current-status">${statusText}</div>
-      <div class="word-actions">
-        <button class="unknown-button">わからない</button>
-        <button class="known-button">わかる</button>
-      </div>
+  if (importedIndex >= importedWords.length) {
+    const complete = document.createElement("div");
+    complete.className = "import-complete";
+    complete.innerHTML = `
+      <strong>仕分け完了！</strong>
+      <p>読み込んだ ${importedWords.length} 語をすべて分類しました。</p>
     `;
+    container.appendChild(complete);
 
-    card.querySelector(".unknown-button").addEventListener(
-      "click",
-      () => classifyImported(entry, "unknown")
-    );
+    const controls = document.createElement("div");
+    controls.className = "imported-controls";
+    const undoButton = document.createElement("button");
+    undoButton.className = "secondary";
+    undoButton.textContent = "↶ 最後の仕分けを取り消す";
+    undoButton.disabled = importedHistory.length === 0;
+    undoButton.addEventListener("click", undoImportedClassification);
+    controls.appendChild(undoButton);
+    container.appendChild(controls);
+    return;
+  }
 
-    card.querySelector(".known-button").addEventListener(
-      "click",
-      () => classifyImported(entry, "known")
-    );
+  const entry = importedWords[importedIndex];
+  const card = document.createElement("article");
+  card.className = "word-card imported-word-card";
 
-    grid.appendChild(card);
-  });
+  card.innerHTML = `
+    <div class="word-title">
+      <strong>${escapeHtml(entry.word)}</strong>
+      <span class="tag">${escapeHtml(entry.pos)}</span>
+      ${entry.uncertain
+        ? '<span class="tag warning-tag">要確認</span>'
+        : ""}
+    </div>
+    <div class="meaning">${escapeHtml(entry.meaning)}</div>
+    <div class="detail">
+      出現回数：${entry.count}
+      ${entry.forms.length
+        ? " ／ 本文中の形：" + escapeHtml(entry.forms.join(", "))
+        : ""}
+    </div>
+    <p class="muted imported-hint">意味を確認して、どちらかを選んでください。</p>
+    <div class="word-actions">
+      <button class="unknown-button">わからない</button>
+      <button class="known-button">わかる</button>
+    </div>
+  `;
 
-  container.appendChild(grid);
+  card.querySelector(".unknown-button").addEventListener(
+    "click",
+    () => classifyImported(entry, "unknown")
+  );
+  card.querySelector(".known-button").addEventListener(
+    "click",
+    () => classifyImported(entry, "known")
+  );
+
+  container.appendChild(card);
+
+  const controls = document.createElement("div");
+  controls.className = "imported-controls";
+  const undoButton = document.createElement("button");
+  undoButton.className = "secondary";
+  undoButton.textContent = "↶ ひとつ戻る";
+  undoButton.disabled = importedHistory.length === 0;
+  undoButton.addEventListener("click", undoImportedClassification);
+  controls.appendChild(undoButton);
+  container.appendChild(controls);
 }
 
 // ------------------------------
