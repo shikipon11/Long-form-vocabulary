@@ -507,7 +507,7 @@ function selectImported(entry, status, card) {
   // 色を見せてから次の単語へ
   setTimeout(() => {
     classifyImported(entry, status);
-  }, 1000);
+  }, 400);
 }
 
 function classifyImported(entry, status) {
