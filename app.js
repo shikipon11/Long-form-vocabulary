@@ -745,6 +745,10 @@ function renderStudyCard() {
 
   $("cardWord").textContent = entry.word;
   $("cardMeaning").textContent = entry.meaning;
+  // 品詞を色付きで表示
+$("cardPos").textContent = entry.pos;
+$("cardPos").className =
+  `tag pos-tag ${getPosClass(entry.pos)}`;
 
   $("cardSide").textContent =
     isFlipped ? "JAPANESE" : "ENGLISH";
