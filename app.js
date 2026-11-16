@@ -15,6 +15,11 @@ let isFlipped = false;
 
 // 仕分け取り消し用
 let classifyHistory = [];
+// 今回の学習で仕分け済みの単語
+let classifiedThisSession = new Set();
+
+// 今回の学習開始時の単語数
+let sessionTotal = 0;
 
 // スワイプ操作用
 let touchStartX = 0;
@@ -558,7 +563,8 @@ function renderBook() {
 // カード学習
 // ------------------------------
 
-function getDeck() {
+// 現在の分類条件に合う単語
+function getBaseDeck() {
   return words.filter(word => {
     if (currentDeck === "known") {
       return word.status === "known";
@@ -572,16 +578,39 @@ function getDeck() {
   });
 }
 
+// 単語を識別するためのキー
+function getEntryKey(entry) {
+  return (
+    entry.word.toLowerCase() +
+    "::" +
+    Boolean(entry.phrase)
+  );
+}
+
+// 今回まだ仕分けていない単語
+function getDeck() {
+  return getBaseDeck().filter(word =>
+    !classifiedThisSession.has(getEntryKey(word))
+  );
+}
+
 // 学習する単語の絞り込み
 document.querySelectorAll("[data-deck]").forEach(button => {
   button.addEventListener("click", () => {
     currentDeck = button.dataset.deck;
+
+    // 新しい仕分けを開始
+    classifiedThisSession.clear();
+    classifyHistory = [];
+
     currentCardIndex = 0;
     isFlipped = false;
 
     document.querySelectorAll("[data-deck]").forEach(b => {
       b.classList.toggle("active", b === button);
     });
+
+    sessionTotal = getBaseDeck().length;
 
     renderStudyCard();
   });
@@ -590,38 +619,44 @@ document.querySelectorAll("[data-deck]").forEach(button => {
 // カード表示
 function renderStudyCard() {
   const deck = getDeck();
+  const done = classifiedThisSession.size;
 
-  if (currentCardIndex >= deck.length) {
-    currentCardIndex = 0;
-  }
-
-  $("cardCounter").textContent = deck.length
-    ? `${currentCardIndex + 1} / ${deck.length}`
-    : "0 / 0";
+  $("cardCounter").textContent =
+    `${done} / ${sessionTotal} 完了`;
 
   $("studyProgressText").textContent =
-    `${deck.length}語`;
+    `残り ${deck.length} 語`;
 
-  $("studyProgressBar").style.width = deck.length
-    ? `${((currentCardIndex + 1) / deck.length) * 100}%`
-    : "0%";
+  $("studyProgressBar").style.width =
+    sessionTotal > 0
+      ? `${(done / sessionTotal) * 100}%`
+      : "0%";
 
   $("undoClassify").disabled =
     classifyHistory.length === 0;
 
   if (!deck.length) {
-    $("cardSide").textContent = "NO WORDS";
-    $("cardWord").textContent = "単語がありません";
-    $("cardMeaning").textContent = "";
     $("cardMeaning").classList.add("hidden");
-    $("cardHint").textContent = "単語を追加してください";
-    $("studyMessage").textContent = "";
-
     $("flashcard").classList.remove("flipped");
 
     $("markKnown").disabled = true;
     $("markUnknown").disabled = true;
     $("flipCard").disabled = true;
+
+    if (sessionTotal > 0 && done >= sessionTotal) {
+      $("cardSide").textContent = "COMPLETE";
+      $("cardWord").textContent = "仕分け完了！";
+      $("cardHint").textContent =
+        "すべての単語を分類しました";
+      $("studyMessage").textContent =
+        `${done}語すべての仕分けが終わりました！`;
+    } else {
+      $("cardSide").textContent = "NO WORDS";
+      $("cardWord").textContent = "単語がありません";
+      $("cardHint").textContent =
+        "単語を追加してください";
+      $("studyMessage").textContent = "";
+    }
 
     return;
   }
@@ -630,14 +665,13 @@ function renderStudyCard() {
   $("markUnknown").disabled = false;
   $("flipCard").disabled = false;
 
-  const entry = deck[currentCardIndex];
+  const entry = deck[0];
 
   $("cardWord").textContent = entry.word;
   $("cardMeaning").textContent = entry.meaning;
 
-  $("cardSide").textContent = isFlipped
-    ? "JAPANESE"
-    : "ENGLISH";
+  $("cardSide").textContent =
+    isFlipped ? "JAPANESE" : "ENGLISH";
 
   $("cardMeaning").classList.toggle(
     "hidden",
@@ -684,46 +718,30 @@ $("flipCard").addEventListener("click", flipCard);
 
 
 function markCurrentWord(status) {
+  function markCurrentWord(status) {
   const deck = getDeck();
 
   if (!deck.length) return;
 
-  const entry = deck[currentCardIndex];
+  const entry = deck[0];
   const index = findWordIndex(entry);
 
   if (index < 0) return;
 
-  // 取り消し用に変更前の状態を保存
   classifyHistory.push({
     word: words[index].word,
     phrase: words[index].phrase,
-    status: words[index].status,
-    index: currentCardIndex
+    status: words[index].status
   });
 
-  // 分類を変更
   words[index].status = status;
 
-  const updatedDeck = getDeck();
-
-  // 変更した単語がまだ学習対象に残っているか確認
-  const nextIndex = updatedDeck.findIndex(w =>
-    w.word.toLowerCase() === entry.word.toLowerCase() &&
-    Boolean(w.phrase) === Boolean(entry.phrase)
-  );
-
-  if (updatedDeck.length === 0) {
-    currentCardIndex = 0;
-  } else if (nextIndex >= 0) {
-    // まだ対象に残っている場合は次の単語へ
-    currentCardIndex = (nextIndex + 1) % updatedDeck.length;
-  } else {
-    // 対象から外れた場合は同じ位置の次の単語へ
-    currentCardIndex = currentCardIndex % updatedDeck.length;
-  }
+  // 今回の仕分け済みに追加
+  classifiedThisSession.add(getEntryKey(entry));
 
   isFlipped = false;
 
+  // 保存すると次の未分類単語が表示される
   saveBook();
 }
 
@@ -732,6 +750,7 @@ function markCurrentWord(status) {
 // ------------------------------
 
 function undoClassification() {
+ function undoClassification() {
   if (!classifyHistory.length) return;
 
   const previous = classifyHistory.pop();
@@ -741,14 +760,15 @@ function undoClassification() {
     Boolean(w.phrase) === Boolean(previous.phrase)
   );
 
-  if (index < 0) {
-    renderStudyCard();
-    return;
-  }
+  if (index < 0) return;
 
   words[index].status = previous.status;
 
-  currentCardIndex = previous.index;
+  // 仕分け済みから戻す
+  classifiedThisSession.delete(
+    getEntryKey(words[index])
+  );
+
   isFlipped = false;
 
   saveBook();
@@ -885,10 +905,11 @@ $("clearBook").addEventListener("click", () => {
     saveBook();
   }
 });
-
 // ------------------------------
 // 初期表示
 // ------------------------------
+
+sessionTotal = getBaseDeck().length;
 
 renderBook();
 renderStudyCard();
