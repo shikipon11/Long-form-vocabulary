@@ -88,6 +88,29 @@ function findWordIndex(entry) {
   );
 }
 
+// 品詞ごとの色分け
+function getPosClass(pos) {
+  const value = String(pos || "品詞不明");
+
+  if (value.includes("熟語")) return "pos-phrase";
+  if (value.includes("固有名詞")) return "pos-proper";
+  if (value.includes("助動詞")) return "pos-auxiliary";
+  if (value.includes("名詞")) return "pos-noun";
+  if (value.includes("動詞")) return "pos-verb";
+  if (value.includes("形容詞")) return "pos-adjective";
+  if (value.includes("副詞")) return "pos-adverb";
+  if (value.includes("前置詞")) return "pos-preposition";
+  if (value.includes("接続詞")) return "pos-conjunction";
+  if (value.includes("代名詞")) return "pos-pronoun";
+  if (value.includes("冠詞")) return "pos-article";
+
+  return "pos-other";
+}
+
+function posTag(entry) {
+  return `<span class="tag pos-tag ${getPosClass(entry.pos)}">${escapeHtml(entry.pos)}</span>`;
+}
+
 // ------------------------------
 // 画面切り替え
 // ------------------------------
@@ -463,7 +486,7 @@ function renderImportedWords() {
   card.innerHTML = `
     <div class="word-title">
       <strong>${escapeHtml(entry.word)}</strong>
-      <span class="tag">${escapeHtml(entry.pos)}</span>
+      ${posTag(entry)}
       ${entry.uncertain
         ? '<span class="tag warning-tag">要確認</span>'
         : ""}
@@ -570,7 +593,7 @@ function renderBook() {
     card.innerHTML = `
       <div class="word-title">
         <strong>${escapeHtml(entry.word)}</strong>
-        <span class="tag">${escapeHtml(entry.pos)}</span>
+        ${posTag(entry)}
       </div>
       <div class="meaning">${escapeHtml(entry.meaning)}</div>
       <div class="detail">
