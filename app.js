@@ -8,6 +8,8 @@ let selectedImage = null;
 let words = loadBook();
 
 let importedWords = [];
+let importedIndex = 0;
+let importedHistory = [];
 let currentDeck = "all";
 let currentBookFilter = "all";
 let currentCardIndex = 0;
@@ -332,7 +334,8 @@ $("importJson").addEventListener("click", () => {
     }
 
     renderImportedWords();
-
+    importedIndex = 0;
+    importedHistory = [];
     message.textContent =
       `${importedWords.length}件の単語を読み込みました。わかる・わからないを判定してください。`;
 
