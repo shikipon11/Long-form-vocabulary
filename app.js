@@ -282,17 +282,75 @@ $("copyPrompt").addEventListener("click", async () => {
 // ------------------------------
 
 function parseJson(raw) {
-  // 前後の空白やコードフェンスを削除
   let cleaned = String(raw ?? "").trim()
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```$/, "");
+
+  // HTMLエンティティを通常の文字に戻す
+  cleaned = cleaned
+    .replace(/&#x20;/gi, " ")
+    .replace(/&#32;/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&amp;/gi, "&");
 
   // スマートクォートを通常の引用符に変換
   cleaned = cleaned
     .replace(/[“”＂]/g, '"')
     .replace(/[‘’]/g, "'");
 
-  // そのままJSONとして読み込む
+  // JSON文字列の外側にある不要なバックスラッシュを除去
+  function removeCopyEscapes(text) {
+    let result = "";
+    let inString = false;
+    let escaped = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const next = text[i + 1];
+
+      if (inString) {
+        result += char;
+
+        if (escaped) {
+          escaped = false;
+        } else if (char === "\\") {
+          escaped = true;
+        } else if (char === '"') {
+          inString = false;
+        }
+
+        continue;
+      }
+
+      if (char === '"') {
+        inString = true;
+        result += char;
+        continue;
+      }
+
+      // 改行直前の不要なバックスラッシュを除去
+      if (char === "\\" && (next === "\n" || next === "\r")) {
+        continue;
+      }
+
+      // [ や ] の前にある不要なバックスラッシュを除去
+      if (char === "\\" && (next === "[" || next === "]")) {
+        continue;
+      }
+
+      result += char;
+    }
+
+    return result;
+  }
+
+  cleaned = removeCopyEscapes(cleaned);
+
+  // JSONとして読み込む
   try {
     return JSON.parse(cleaned);
   } catch {}
@@ -303,23 +361,21 @@ function parseJson(raw) {
 
   if (start >= 0 && end > start) {
     try {
-      return JSON.parse(
-        cleaned.slice(start, end + 1)
-      );
+      return JSON.parse(cleaned.slice(start, end + 1));
     } catch {}
   }
 
-  // エラーを日本語で表示
   throw new Error(
     "データを読み込めませんでした。\n\n" +
+    "コピーしたデータのJSON構造が正しくない可能性があります。\n\n" +
     "次の点を確認してください。\n" +
-    "・JSON形式のデータを貼り付けているか\n" +
-    "・単語の名前や意味が正しく記述されているか\n" +
-    "・カッコやカンマが抜けていないか\n\n" +
-    "ChatGPTの回答をもう一度コピーして試してください。"
+    "・JSON形式のデータをコピーしているか\n" +
+    "・words と phrases が配列になっているか\n" +
+    "・forms が配列になっているか\n" +
+    "・カッコやカンマ、引用符が正しく配置されているか\n\n" +
+    "ChatGPTの回答では、コードブロック内のJSONだけをコピーして再度お試しください。"
   );
 }
-
 function normalizeEntry(item, isPhrase = false) {
   if (
     !item ||
