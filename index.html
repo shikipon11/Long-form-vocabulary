@@ -67,40 +67,63 @@
     </section>
 
     <section id="studySection" class="page-section hidden">
-      <section class="panel">
-        <div class="step">FLASH CARD</div>
-        <h1>カード学習</h1>
-        <p class="muted">英単語を見て意味を考えたら、カードをめくって答えを確認しよう。</p>
+  <section class="panel study-panel">
+    <div class="step">FLASH CARD</div>
 
-        <div class="study-filters">
-          <button class="filter-button active" data-deck="all">すべて</button>
-          <button class="filter-button" data-deck="unknown">わからない</button>
-          <button class="filter-button" data-deck="known">わかる</button>
-        </div>
+    <div class="study-heading">
+      <div>
+        <h1>単語の仕分け</h1>
+        <p class="muted">意味を確認して、左右に操作しよう。</p>
+      </div>
+      <button id="undoClassify" class="secondary" disabled>
+        ↶ 取り消す
+      </button>
+    </div>
 
-        <div class="card-counter" id="cardCounter">0 / 0</div>
+    <div class="study-filters">
+      <button class="filter-button active" data-deck="all">すべて</button>
+      <button class="filter-button" data-deck="unknown">わからない</button>
+      <button class="filter-button" data-deck="known">わかる</button>
+    </div>
 
-        <button id="flashcard" class="flashcard" type="button" aria-label="カードをめくる">
-          <span id="cardSide" class="card-side">ENGLISH</span>
-          <strong id="cardWord" class="card-word">単語がありません</strong>
-          <span id="cardMeaning" class="card-meaning hidden"></span>
-          <span id="cardHint" class="card-hint">タップして意味を確認</span>
-        </button>
+    <div class="study-progress-row">
+      <strong id="cardCounter">0 / 0</strong>
+      <span id="studyProgressText">0語</span>
+    </div>
 
-        <div class="study-actions">
-          <button id="prevCard" class="secondary">← 前へ</button>
-          <button id="flipCard" class="primary">カードをめくる</button>
-          <button id="nextCard" class="secondary">次へ →</button>
-        </div>
+    <div class="progress-track">
+      <div id="studyProgressBar" class="progress-bar"></div>
+    </div>
 
-        <div class="classify-actions">
-          <button id="markUnknown" class="unknown-button">わからない</button>
-          <button id="markKnown" class="known-button">わかる</button>
-        </div>
-        <p id="studyMessage" class="message"></p>
-      </section>
-    </section>
+    <button id="flashcard" class="flashcard" type="button">
+      <span id="cardSide" class="card-side">ENGLISH</span>
+      <strong id="cardWord" class="card-word">単語がありません</strong>
+      <span id="cardMeaning" class="card-meaning hidden"></span>
+      <span id="cardHint" class="card-hint">
+        タップして意味を確認
+      </span>
+    </button>
 
+    <div class="study-actions">
+      <button id="flipCard" class="primary">意味を見る</button>
+    </div>
+
+    <div class="classify-actions">
+      <button id="markUnknown" class="unknown-button">
+        ← わからない
+      </button>
+      <button id="markKnown" class="known-button">
+        わかる →
+      </button>
+    </div>
+
+    <p id="studyMessage" class="message"></p>
+
+    <p class="keyboard-hint">
+      PC：← わからない ／ → わかる ／ Backspace 取り消し
+    </p>
+  </section>
+</section>
     <section id="bookSection" class="page-section hidden">
       <section class="panel">
         <div class="section-head">
