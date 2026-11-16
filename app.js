@@ -387,7 +387,35 @@ $("importJson").addEventListener("click", () => {
 // ------------------------------
 // 読み込んだ単語の仕分け（1語ずつ表示）
 // ------------------------------
+function selectImported(entry, status, card) {
+  const buttons = card.querySelectorAll("button");
 
+  // 連続クリックを防止
+  buttons.forEach(button => {
+    button.disabled = true;
+  });
+
+  // 選択したボタンを強調
+  const selectedButton = card.querySelector(
+    status === "known"
+      ? ".known-button"
+      : ".unknown-button"
+  );
+
+  selectedButton.classList.add("selected");
+
+  // カード全体の色を変更
+  card.classList.add(
+    status === "known"
+      ? "selected-known"
+      : "selected-unknown"
+  );
+
+  // 色を見せてから次の単語へ
+  setTimeout(() => {
+    classifyImported(entry, status);
+  }, 450);
+}
 function classifyImported(entry, status) {
   const index = findWordIndex(entry);
 
@@ -507,16 +535,15 @@ function renderImportedWords() {
       <button class="known-button">わかる</button>
     </div>
   `;
+card.querySelector(".unknown-button").addEventListener(
+  "click",
+  () => selectImported(entry, "unknown", card)
+);
 
-  card.querySelector(".unknown-button").addEventListener(
-    "click",
-    () => classifyImported(entry, "unknown")
-  );
-  card.querySelector(".known-button").addEventListener(
-    "click",
-    () => classifyImported(entry, "known")
-  );
-
+card.querySelector(".known-button").addEventListener(
+  "click",
+  () => selectImported(entry, "known", card)
+);
   container.appendChild(card);
 
   const controls = document.createElement("div");
