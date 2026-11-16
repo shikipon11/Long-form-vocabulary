@@ -846,15 +846,14 @@ $("flipCard").addEventListener("click", flipCard);
 // ------------------------------
 // 単語の仕分け
 // ------------------------------
-
 function markCurrentWord(status) {
-  const deck = getDeck();
+  if (classificationTimer) return;
 
+  const deck = getDeck();
   if (!deck.length) return;
 
   const entry = deck[0];
   const index = findWordIndex(entry);
-
   if (index < 0) return;
 
   // 取り消し用に変更前の状態を保存
@@ -864,30 +863,38 @@ function markCurrentWord(status) {
     status: words[index].status
   });
 
-  words[index].status = status;
-
-  // 今回の仕分け済みに追加
-  classifiedThisSession.add(getEntryKey(entry));
-
-  isFlipped = false;
-
-  // 選択した分類を記録
+  // 選択した色を表示
   lastClassification = status;
-
-  // 前のタイマーを解除
-  clearTimeout(classificationTimer);
-
-  // まず現在のカードに分類結果を表示
-  renderBook();
   renderStudyCard();
 
-  // 450ミリ秒後に色を消して次のカードへ
+  $("markKnown").disabled = true;
+  $("markUnknown").disabled = true;
+  $("flipCard").disabled = true;
+  $("undoClassify").disabled = true;
+
+  // 450ミリ秒後に背景色を消す
   classificationTimer = setTimeout(() => {
     lastClassification = null;
-    saveBook();
+    renderStudyCard();
+
+    $("markKnown").disabled = true;
+    $("markUnknown").disabled = true;
+    $("flipCard").disabled = true;
+    $("undoClassify").disabled = true;
+
+    // さらに250ミリ秒待ってから次の単語へ
+    classificationTimer = setTimeout(() => {
+      words[index].status = status;
+      classifiedThisSession.add(getEntryKey(entry));
+
+      isFlipped = false;
+      classificationTimer = null;
+
+      saveBook();
+    }, 250);
+
   }, 450);
 }
-
 // ------------------------------
 // 仕分けの取り消し
 // ------------------------------
