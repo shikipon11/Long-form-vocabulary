@@ -1,3 +1,4 @@
+
 const $ = (id) => document.getElementById(id);
 
 const STORAGE_KEY = "longtext-vocab-book-v3";
@@ -12,6 +13,15 @@ let currentBookFilter = "all";
 let currentCardIndex = 0;
 let isFlipped = false;
 
+// 仕分け取り消し用
+let classifyHistory = [];
+
+// スワイプ操作用
+let touchStartX = 0;
+let touchStartY = 0;
+let isPointerDown = false;
+let ignoreNextCardClick = false;
+
 // ------------------------------
 // データ保存・読み込み
 // ------------------------------
@@ -24,15 +34,20 @@ function loadBook() {
       return JSON.parse(current);
     }
 
-    // 以前のバージョンの単語帳を引き継ぐ
-    const old = JSON.parse(localStorage.getItem(OLD_STORAGE_KEY) || "[]");
+    const old = JSON.parse(
+      localStorage.getItem(OLD_STORAGE_KEY) || "[]"
+    );
 
     const migrated = old.map(word => ({
       ...word,
       status: word.status || "unknown"
     }));
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(migrated)
+    );
+
     return migrated;
   } catch {
     return [];
@@ -40,7 +55,11 @@ function loadBook() {
 }
 
 function saveBook() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(words)
+  );
+
   renderBook();
   renderStudyCard();
 }
@@ -79,6 +98,12 @@ document.querySelectorAll(".nav-button").forEach(button => {
     });
 
     $(button.dataset.target).classList.remove("hidden");
+
+    // 学習画面ではヘッダーなどを隠す
+    document.body.classList.toggle(
+      "study-mode",
+      button.dataset.target === "studySection"
+    );
 
     if (button.dataset.target === "studySection") {
       renderStudyCard();
@@ -179,6 +204,7 @@ count は本文中の出現回数です。forms は本文に出た形を列挙�
 
   $("prompt").value = prompt;
   $("prompt").focus();
+
   $("prompt").scrollIntoView({
     behavior: "smooth",
     block: "center"
@@ -201,16 +227,20 @@ $("copyPrompt").addEventListener("click", async () => {
 
   try {
     await navigator.clipboard.writeText(value);
+
     $("copyPrompt").textContent = "コピーしました ✓";
 
     setTimeout(() => {
       $("copyPrompt").textContent = "プロンプトをコピー";
     }, 1600);
+
   } catch {
     $("prompt").focus();
     $("prompt").select();
 
-    alert("自動コピーできませんでした。選択された文章を手動でコピーしてください。");
+    alert(
+      "自動コピーできませんでした。選択された文章を手動でコピーしてください。"
+    );
   }
 });
 
@@ -231,23 +261,37 @@ function parseJson(raw) {
   const end = cleaned.lastIndexOf("}");
 
   if (start >= 0 && end > start) {
-    return JSON.parse(cleaned.slice(start, end + 1));
+    return JSON.parse(
+      cleaned.slice(start, end + 1)
+    );
   }
 
-  throw new Error("JSONを読み取れませんでした。JSON部分だけを貼り付けてください。");
+  throw new Error(
+    "JSONを読み取れませんでした。JSON部分だけを貼り付けてください。"
+  );
 }
 
 function normalizeEntry(item, isPhrase = false) {
-  if (!item || typeof item !== "object" || !String(item.word || "").trim()) {
+  if (
+    !item ||
+    typeof item !== "object" ||
+    !String(item.word || "").trim()
+  ) {
     return null;
   }
 
   return {
     word: String(item.word).trim(),
     meaning: String(item.meaning || "意味未設定"),
-    pos: isPhrase ? "熟語・表現" : String(item.pos || "品詞不明"),
-    count: Number.isFinite(Number(item.count)) ? Number(item.count) : 1,
-    forms: Array.isArray(item.forms) ? item.forms.map(String) : [],
+    pos: isPhrase
+      ? "熟語・表現"
+      : String(item.pos || "品詞不明"),
+    count: Number.isFinite(Number(item.count))
+      ? Number(item.count)
+      : 1,
+    forms: Array.isArray(item.forms)
+      ? item.forms.map(String)
+      : [],
     uncertain: Boolean(item.uncertain),
     phrase: isPhrase
   };
@@ -260,13 +304,22 @@ $("importJson").addEventListener("click", () => {
   try {
     const data = parseJson($("jsonInput").value);
 
-    if (!Array.isArray(data.words) && !Array.isArray(data.phrases)) {
-      throw new Error('JSONに "words" または "phrases" の配列がありません。');
+    if (
+      !Array.isArray(data.words) &&
+      !Array.isArray(data.phrases)
+    ) {
+      throw new Error(
+        'JSONに "words" または "phrases" の配列がありません。'
+      );
     }
 
     importedWords = [
-      ...(data.words || []).map(item => normalizeEntry(item, false)),
-      ...(data.phrases || []).map(item => normalizeEntry(item, true))
+      ...(data.words || []).map(item =>
+        normalizeEntry(item, false)
+      ),
+      ...(data.phrases || []).map(item =>
+        normalizeEntry(item, true)
+      )
     ].filter(Boolean);
 
     if (!importedWords.length) {
@@ -286,7 +339,9 @@ $("importJson").addEventListener("click", () => {
     });
 
   } catch (error) {
-    message.textContent = error.message || "取り込みに失敗しました。";
+    message.textContent =
+      error.message || "取り込みに失敗しました。";
+
     message.className = "message error";
   }
 });
@@ -301,8 +356,12 @@ function classifyImported(entry, status) {
   const savedEntry = {
     ...entry,
     status,
-    id: index >= 0 ? words[index].id : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-    addedAt: index >= 0 ? words[index].addedAt : new Date().toISOString()
+    id: index >= 0
+      ? words[index].id
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    addedAt: index >= 0
+      ? words[index].addedAt
+      : new Date().toISOString()
   };
 
   if (index >= 0) {
@@ -327,7 +386,9 @@ function renderImportedWords() {
 
   const description = document.createElement("p");
   description.className = "muted";
-  description.textContent = "意味を確認して、わかる・わからないを選んでください。";
+  description.textContent =
+    "意味を確認して、わかる・わからないを選んでください。";
+
   container.appendChild(description);
 
   const grid = document.createElement("div");
@@ -341,19 +402,26 @@ function renderImportedWords() {
     card.className = "word-card";
 
     const statusText = saved
-      ? saved.status === "known" ? "わかるに分類済み" : "わからないに分類済み"
+      ? saved.status === "known"
+        ? "わかるに分類済み"
+        : "わからないに分類済み"
       : "未分類";
 
     card.innerHTML = `
       <div class="word-title">
         <strong>${escapeHtml(entry.word)}</strong>
         <span class="tag">${escapeHtml(entry.pos)}</span>
-        ${entry.uncertain ? '<span class="tag warning-tag">要確認</span>' : ""}
+        ${entry.uncertain
+          ? '<span class="tag warning-tag">要確認</span>'
+          : ""}
       </div>
       <div class="meaning">${escapeHtml(entry.meaning)}</div>
       <div class="detail">
         出現回数：${entry.count}
-        ${entry.forms.length ? " ／ 本文中の形：" + escapeHtml(entry.forms.join(", ")) : ""}
+        ${entry.forms.length
+          ? " ／ 本文中の形：" +
+            escapeHtml(entry.forms.join(", "))
+          : ""}
       </div>
       <div class="detail current-status">${statusText}</div>
       <div class="word-actions">
@@ -362,13 +430,15 @@ function renderImportedWords() {
       </div>
     `;
 
-    card.querySelector(".unknown-button").addEventListener("click", () => {
-      classifyImported(entry, "unknown");
-    });
+    card.querySelector(".unknown-button").addEventListener(
+      "click",
+      () => classifyImported(entry, "unknown")
+    );
 
-    card.querySelector(".known-button").addEventListener("click", () => {
-      classifyImported(entry, "known");
-    });
+    card.querySelector(".known-button").addEventListener(
+      "click",
+      () => classifyImported(entry, "known")
+    );
 
     grid.appendChild(card);
   });
@@ -395,23 +465,35 @@ document.querySelectorAll("[data-book-filter]").forEach(button => {
 function renderBook() {
   const list = $("wordList");
 
-  const knownCount = words.filter(w => w.status === "known").length;
-  const unknownCount = words.filter(w => w.status !== "known").length;
+  const knownCount = words.filter(
+    w => w.status === "known"
+  ).length;
+
+  const unknownCount = words.filter(
+    w => w.status !== "known"
+  ).length;
 
   $("totalCount").textContent = words.length;
   $("knownCount").textContent = knownCount;
   $("unknownCount").textContent = unknownCount;
 
   const filtered = words.filter(word => {
-    if (currentBookFilter === "known") return word.status === "known";
-    if (currentBookFilter === "unknown") return word.status !== "known";
+    if (currentBookFilter === "known") {
+      return word.status === "known";
+    }
+
+    if (currentBookFilter === "unknown") {
+      return word.status !== "known";
+    }
+
     return true;
   });
 
   list.innerHTML = "";
 
   if (!filtered.length) {
-    list.innerHTML = '<p class="empty">この分類にはまだ単語がありません。</p>';
+    list.innerHTML =
+      '<p class="empty">この分類にはまだ単語がありません。</p>';
     return;
   }
 
@@ -419,8 +501,13 @@ function renderBook() {
     const card = document.createElement("article");
     card.className = "word-card";
 
-    const statusClass = entry.status === "known" ? "status-known" : "status-unknown";
-    const statusText = entry.status === "known" ? "わかる" : "わからない";
+    const statusClass = entry.status === "known"
+      ? "status-known"
+      : "status-unknown";
+
+    const statusText = entry.status === "known"
+      ? "わかる"
+      : "わからない";
 
     card.innerHTML = `
       <div class="word-title">
@@ -430,9 +517,13 @@ function renderBook() {
       <div class="meaning">${escapeHtml(entry.meaning)}</div>
       <div class="detail">
         出現回数：${entry.count}
-        ${entry.forms?.length ? " ／ " + escapeHtml(entry.forms.join(", ")) : ""}
+        ${entry.forms?.length
+          ? " ／ " + escapeHtml(entry.forms.join(", "))
+          : ""}
       </div>
-      ${entry.uncertain ? '<div class="detail warning-text">読み取り・意味を要確認</div>' : ""}
+      ${entry.uncertain
+        ? '<div class="detail warning-text">読み取り・意味を要確認</div>'
+        : ""}
       <div class="word-card-footer">
         <span class="status-label ${statusClass}">${statusText}</span>
         <button class="small-button">分類変更</button>
@@ -440,15 +531,24 @@ function renderBook() {
       </div>
     `;
 
-    card.querySelector(".small-button").addEventListener("click", () => {
-      entry.status = entry.status === "known" ? "unknown" : "known";
-      saveBook();
-    });
+    card.querySelector(".small-button").addEventListener(
+      "click",
+      () => {
+        entry.status = entry.status === "known"
+          ? "unknown"
+          : "known";
 
-    card.querySelector(".delete-word").addEventListener("click", () => {
-      words = words.filter(w => w.id !== entry.id);
-      saveBook();
-    });
+        saveBook();
+      }
+    );
+
+    card.querySelector(".delete-word").addEventListener(
+      "click",
+      () => {
+        words = words.filter(w => w.id !== entry.id);
+        saveBook();
+      }
+    );
 
     list.appendChild(card);
   });
@@ -460,12 +560,19 @@ function renderBook() {
 
 function getDeck() {
   return words.filter(word => {
-    if (currentDeck === "known") return word.status === "known";
-    if (currentDeck === "unknown") return word.status !== "known";
+    if (currentDeck === "known") {
+      return word.status === "known";
+    }
+
+    if (currentDeck === "unknown") {
+      return word.status !== "known";
+    }
+
     return true;
   });
 }
 
+// 学習する単語の絞り込み
 document.querySelectorAll("[data-deck]").forEach(button => {
   button.addEventListener("click", () => {
     currentDeck = button.dataset.deck;
@@ -480,12 +587,27 @@ document.querySelectorAll("[data-deck]").forEach(button => {
   });
 });
 
+// カード表示
 function renderStudyCard() {
   const deck = getDeck();
+
+  if (currentCardIndex >= deck.length) {
+    currentCardIndex = 0;
+  }
 
   $("cardCounter").textContent = deck.length
     ? `${currentCardIndex + 1} / ${deck.length}`
     : "0 / 0";
+
+  $("studyProgressText").textContent =
+    `${deck.length}語`;
+
+  $("studyProgressBar").style.width = deck.length
+    ? `${((currentCardIndex + 1) / deck.length) * 100}%`
+    : "0%";
+
+  $("undoClassify").disabled =
+    classifyHistory.length === 0;
 
   if (!deck.length) {
     $("cardSide").textContent = "NO WORDS";
@@ -494,41 +616,54 @@ function renderStudyCard() {
     $("cardMeaning").classList.add("hidden");
     $("cardHint").textContent = "単語を追加してください";
     $("studyMessage").textContent = "";
+
     $("flashcard").classList.remove("flipped");
+
     $("markKnown").disabled = true;
     $("markUnknown").disabled = true;
-    $("prevCard").disabled = true;
-    $("nextCard").disabled = true;
+    $("flipCard").disabled = true;
+
     return;
   }
 
   $("markKnown").disabled = false;
   $("markUnknown").disabled = false;
-  $("prevCard").disabled = deck.length <= 1;
-  $("nextCard").disabled = deck.length <= 1;
-
-  if (currentCardIndex >= deck.length) {
-    currentCardIndex = 0;
-  }
+  $("flipCard").disabled = false;
 
   const entry = deck[currentCardIndex];
 
   $("cardWord").textContent = entry.word;
   $("cardMeaning").textContent = entry.meaning;
-  $("cardSide").textContent = isFlipped ? "JAPANESE" : "ENGLISH";
 
-  $("cardMeaning").classList.toggle("hidden", !isFlipped);
+  $("cardSide").textContent = isFlipped
+    ? "JAPANESE"
+    : "ENGLISH";
+
+  $("cardMeaning").classList.toggle(
+    "hidden",
+    !isFlipped
+  );
+
   $("cardHint").textContent = isFlipped
     ? `${entry.pos} ・ 出現回数 ${entry.count}`
     : "タップして意味を確認";
 
-  $("flashcard").classList.toggle("flipped", isFlipped);
+  $("flashcard").classList.toggle(
+    "flipped",
+    isFlipped
+  );
 
-  $("studyMessage").textContent = entry.status === "known"
-    ? "現在の分類：わかる"
-    : "現在の分類：わからない";
+  $("flipCard").textContent = isFlipped
+    ? "英語に戻す"
+    : "意味を見る";
+
+  $("studyMessage").textContent =
+    entry.status === "known"
+      ? "現在の分類：わかる"
+      : "現在の分類：わからない";
 }
 
+// カードを裏返す
 function flipCard() {
   if (!getDeck().length) return;
 
@@ -536,23 +671,16 @@ function flipCard() {
   renderStudyCard();
 }
 
-$("flashcard").addEventListener("click", flipCard);
+$("flashcard").addEventListener("click", () => {
+  if (ignoreNextCardClick) return;
+  flipCard();
+});
+
 $("flipCard").addEventListener("click", flipCard);
 
-function moveCard(direction) {
-  const deck = getDeck();
-
-  if (!deck.length) return;
-
-  currentCardIndex =
-    (currentCardIndex + direction + deck.length) % deck.length;
-
-  isFlipped = false;
-  renderStudyCard();
-}
-
-$("prevCard").addEventListener("click", () => moveCard(-1));
-$("nextCard").addEventListener("click", () => moveCard(1));
+// ------------------------------
+// 単語の仕分け
+// ------------------------------
 
 function markCurrentWord(status) {
   const deck = getDeck();
@@ -564,18 +692,27 @@ function markCurrentWord(status) {
 
   if (index < 0) return;
 
-  words[index].status = status;
-  saveBook();
+  // 取り消し用に変更前の状態を保存
+  classifyHistory.push({
+    word: words[index].word,
+    phrase: words[index].phrase,
+    status: words[index].status,
+    index: currentCardIndex
+  });
 
-  // 仕分け中の分類から外れた場合、次のカードへ進む
+  words[index].status = status;
+
   const updatedDeck = getDeck();
 
+  // 現在のカードが絞り込み対象から外れた場合、
+  // 同じ位置にある次のカードを表示する
   if (currentCardIndex >= updatedDeck.length) {
     currentCardIndex = 0;
   }
 
   isFlipped = false;
-  renderStudyCard();
+
+  saveBook();
 }
 
 $("markKnown").addEventListener("click", () => {
@@ -587,14 +724,160 @@ $("markUnknown").addEventListener("click", () => {
 });
 
 // ------------------------------
+// 仕分けの取り消し
+// ------------------------------
+
+function undoClassification() {
+  if (!classifyHistory.length) return;
+
+  const previous = classifyHistory.pop();
+
+  const index = words.findIndex(w =>
+    w.word.toLowerCase() === previous.word.toLowerCase() &&
+    Boolean(w.phrase) === Boolean(previous.phrase)
+  );
+
+  if (index < 0) {
+    renderStudyCard();
+    return;
+  }
+
+  words[index].status = previous.status;
+
+  currentCardIndex = previous.index;
+  isFlipped = false;
+
+  saveBook();
+}
+
+$("undoClassify").addEventListener(
+  "click",
+  undoClassification
+);
+
+// ------------------------------
+// スワイプ操作
+// ------------------------------
+
+$("flashcard").addEventListener(
+  "pointerdown",
+  event => {
+    if (event.pointerType === "mouse") return;
+
+    touchStartX = event.clientX;
+    touchStartY = event.clientY;
+    isPointerDown = true;
+  }
+);
+
+$("flashcard").addEventListener(
+  "pointerup",
+  event => {
+    if (
+      event.pointerType === "mouse" ||
+      !isPointerDown
+    ) {
+      return;
+    }
+
+    isPointerDown = false;
+
+    const diffX = event.clientX - touchStartX;
+    const diffY = event.clientY - touchStartY;
+
+    // 横方向に十分動いたときだけ仕分けする
+    if (
+      Math.abs(diffX) < 55 ||
+      Math.abs(diffX) < Math.abs(diffY) * 1.25
+    ) {
+      return;
+    }
+
+    ignoreNextCardClick = true;
+
+    if (diffX < 0) {
+      markCurrentWord("unknown");
+    } else {
+      markCurrentWord("known");
+    }
+
+    setTimeout(() => {
+      ignoreNextCardClick = false;
+    }, 300);
+  }
+);
+
+$("flashcard").addEventListener(
+  "pointercancel",
+  () => {
+    isPointerDown = false;
+  }
+);
+
+// ------------------------------
+// キーボード操作
+// ------------------------------
+
+document.addEventListener("keydown", event => {
+  if (!document.body.classList.contains("study-mode")) {
+    return;
+  }
+
+  const active = document.activeElement;
+
+  if (
+    active &&
+    (
+      active.tagName === "INPUT" ||
+      active.tagName === "TEXTAREA" ||
+      active.tagName === "SELECT" ||
+      active.isContentEditable
+    )
+  ) {
+    return;
+  }
+
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    markCurrentWord("unknown");
+  }
+
+  if (event.key === "ArrowRight") {
+    event.preventDefault();
+    markCurrentWord("known");
+  }
+
+  if (event.key === "Backspace") {
+    event.preventDefault();
+    undoClassification();
+  }
+
+  if (
+    event.key === " " ||
+    event.key === "Enter"
+  ) {
+    if (event.target === $("flashcard")) return;
+
+    event.preventDefault();
+    flipCard();
+  }
+});
+
+// ------------------------------
 // 単語帳の全削除
 // ------------------------------
 
 $("clearBook").addEventListener("click", () => {
   if (!words.length) return;
 
-  if (confirm("単語帳の内容をすべて削除します。よろしいですか？")) {
+  if (
+    confirm(
+      "単語帳の内容をすべて削除します。よろしいですか？"
+    )
+  ) {
     words = [];
+    classifyHistory = [];
+    currentCardIndex = 0;
     saveBook();
   }
 });
