@@ -332,10 +332,10 @@ $("importJson").addEventListener("click", () => {
     if (!importedWords.length) {
       throw new Error("取り込める単語がありませんでした。");
     }
-
-    renderImportedWords();
     importedIndex = 0;
     importedHistory = [];
+    renderImportedWords();
+   
     message.textContent =
       `${importedWords.length}件の単語を読み込みました。わかる・わからないを判定してください。`;
 
