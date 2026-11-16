@@ -1,0 +1,571 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif;
+  color: #202638;
+  background: #f5f6fa;
+}
+
+body {
+  margin: 0;
+}
+
+.top {
+  padding: 28px 20px 22px;
+  text-align: center;
+  background: #263b68;
+  color: white;
+}
+
+.brand {
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 800;
+}
+
+.top p {
+  margin: 8px 0 0;
+  color: #dce5fa;
+}
+
+main {
+  width: min(1000px, calc(100% - 28px));
+  margin: 24px auto 44px;
+}
+
+.panel {
+  background: white;
+  border: 1px solid #e5e8f0;
+  border-radius: 16px;
+  padding: clamp(18px, 4vw, 26px);
+  margin-bottom: 18px;
+  box-shadow: 0 5px 18px #17264a0a;
+}
+
+.main-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 5px;
+  background: #e9edf5;
+  border-radius: 12px;
+}
+
+.nav-button {
+  flex: 1;
+  padding: 12px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #58647c;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nav-button.active {
+  background: white;
+  color: #29477f;
+  box-shadow: 0 2px 6px #17264a12;
+}
+
+.step {
+  color: #5271b5;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+h1, h2 {
+  margin: 5px 0 8px;
+}
+
+h1 {
+  font-size: 23px;
+}
+
+h2 {
+  font-size: 21px;
+}
+
+h3 {
+  margin-bottom: 8px;
+}
+
+p {
+  line-height: 1.65;
+}
+
+.muted,
+.note {
+  color: #68738a;
+  font-size: 14px;
+}
+
+.note {
+  margin-bottom: 0;
+}
+
+.upload {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 56px;
+  border: 2px dashed #9aabd0;
+  border-radius: 12px;
+  color: #314c83;
+  font-weight: 700;
+  cursor: pointer;
+  background: #f7f9ff;
+}
+
+.upload input {
+  display: none;
+}
+
+.preview {
+  display: block;
+  max-width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  margin: 16px auto;
+  border-radius: 10px;
+  border: 1px solid #e1e5ef;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.field-label {
+  display: block;
+  margin: 18px 0 7px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+textarea {
+  display: block;
+  width: 100%;
+  border: 1px solid #ccd3e1;
+  border-radius: 10px;
+  padding: 12px;
+  font: 14px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+  resize: vertical;
+  color: #202638;
+  background: #fcfdff;
+}
+
+textarea:focus {
+  outline: 3px solid #dce6ff;
+  border-color: #6b86c2;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 13px;
+}
+
+.actions.wrap {
+  flex-wrap: wrap;
+}
+
+button,
+.button-link {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 17px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.primary {
+  color: white;
+  background: #31569b;
+}
+
+.primary:hover {
+  background: #24447f;
+}
+
+.secondary,
+.button-link {
+  background: #eaf0fc;
+  color: #29477f;
+}
+
+.message {
+  min-height: 1.4em;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+.message.error {
+  color: #b42318;
+}
+
+.message.success {
+  color: #18794e;
+}
+
+/* 単語一覧 */
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.danger {
+  color: #a32b35;
+}
+
+.ghost {
+  background: #fff1f1;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+.book-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.book-stats div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  border-radius: 12px;
+  background: #f4f6fb;
+}
+
+.book-stats strong {
+  font-size: 25px;
+  color: #29477f;
+}
+
+.book-stats span {
+  color: #68738a;
+  font-size: 12px;
+}
+
+.book-filters,
+.study-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.filter-button {
+  padding: 9px 15px;
+  border-radius: 20px;
+  background: #edf0f6;
+  color: #596780;
+  font-size: 13px;
+}
+
+.filter-button.active {
+  background: #31569b;
+  color: white;
+}
+
+/* 単語カードの複数列表示 */
+
+.word-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.word-card {
+  min-width: 0;
+  border: 1px solid #e3e7ef;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  background: white;
+}
+
+.word-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+}
+
+.word-title strong {
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+.tag {
+  background: #eef2fa;
+  color: #53627e;
+  border-radius: 20px;
+  padding: 3px 9px;
+  font-size: 11px;
+}
+
+.warning-tag {
+  background: #fff3d9;
+  color: #956200;
+}
+
+.meaning {
+  font-weight: 650;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.detail {
+  color: #68738a;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.warning-text {
+  color: #a36b00;
+}
+
+.word-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: auto;
+}
+
+.word-actions button {
+  flex: 1;
+  padding: 8px 5px;
+  font-size: 12px;
+}
+
+.known-button {
+  background: #e7f5ed;
+  color: #28704a;
+}
+
+.unknown-button {
+  background: #fff0ee;
+  color: #ad4038;
+}
+
+.word-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: auto;
+}
+
+.status-label {
+  margin-right: auto;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-known {
+  color: #28704a;
+  background: #e7f5ed;
+}
+
+.status-unknown {
+  color: #ad4038;
+  background: #fff0ee;
+}
+
+.small-button {
+  padding: 7px 9px;
+  background: #edf0f6;
+  color: #596780;
+  font-size: 11px;
+}
+
+.empty {
+  color: #8790a2;
+  text-align: center;
+  padding: 24px 8px;
+  grid-column: 1 / -1;
+}
+
+/* カード学習 */
+
+.card-counter {
+  text-align: center;
+  color: #68738a;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 20px 0 10px;
+}
+
+.flashcard {
+  width: 100%;
+  min-height: 280px;
+  padding: 32px 20px;
+  border: 2px solid #dce4f4;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #f8faff, #edf2fc);
+  color: #263b68;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+  transition: background .2s, border-color .2s;
+}
+
+.flashcard.flipped {
+  background: linear-gradient(145deg, #f1f8f4, #e5f3eb);
+  border-color: #b9ddc7;
+}
+
+.card-side {
+  color: #7183a7;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .18em;
+}
+
+.card-word {
+  font-size: clamp(30px, 7vw, 48px);
+  overflow-wrap: anywhere;
+}
+
+.card-meaning {
+  font-size: clamp(20px, 4vw, 27px);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.card-hint {
+  color: #8290a8;
+  font-size: 13px;
+}
+
+.study-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  gap: 9px;
+  margin-top: 16px;
+}
+
+.study-actions button {
+  padding: 12px 7px;
+}
+
+.classify-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.classify-actions button {
+  min-height: 52px;
+  font-size: 16px;
+}
+
+#studyMessage {
+  text-align: center;
+  color: #68738a;
+}
+
+.imported-results {
+  margin-top: 20px;
+}
+
+footer {
+  text-align: center;
+  padding: 0 18px 28px;
+  color: #778096;
+  font-size: 12px;
+}
+
+/* スマートフォン */
+
+@media (max-width: 720px) {
+  .word-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  main {
+    width: calc(100% - 20px);
+    margin-top: 14px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .word-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .word-card {
+    padding: 10px;
+  }
+
+  .word-title strong {
+    font-size: 16px;
+  }
+
+  .word-card .meaning {
+    font-size: 14px;
+  }
+
+  .word-actions {
+    flex-direction: column;
+  }
+
+  .word-actions button {
+    width: 100%;
+  }
+
+  .study-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .study-actions #flipCard {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .flashcard {
+    min-height: 250px;
+  }
+
+  .section-head {
+    align-items: flex-start;
+  }
+
+  .nav-button {
+    font-size: 12px;
+    padding: 11px 4px;
+  }
+}
