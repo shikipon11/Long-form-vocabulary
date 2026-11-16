@@ -17,6 +17,7 @@ let isFlipped = false;
 // 直前に選択した分類
 let lastClassification = null;
 let classificationTimer = null;
+let importedClassificationTimer = null;
 
 // 仕分け取り消し用
 let classifyHistory = [];
@@ -483,12 +484,10 @@ $("importJson").addEventListener("click", () => {
 function selectImported(entry, status, card) {
   const buttons = card.querySelectorAll("button");
 
-  // 連続クリックを防止
   buttons.forEach(button => {
     button.disabled = true;
   });
 
-  // 選択したボタンを強調
   const selectedButton = card.querySelector(
     status === "known"
       ? ".known-button"
@@ -497,15 +496,14 @@ function selectImported(entry, status, card) {
 
   selectedButton.classList.add("selected");
 
-  // カード全体の色を変更
   card.classList.add(
     status === "known"
       ? "selected-known"
       : "selected-unknown"
   );
 
-  // 色を見せてから次の単語へ
-  setTimeout(() => {
+  importedClassificationTimer = setTimeout(() => {
+    importedClassificationTimer = null;
     classifyImported(entry, status);
   }, 200);
 }
@@ -555,7 +553,15 @@ function classifyImported(entry, status) {
 }
 
 function undoImportedClassification() {
+  // 実行待ちの仕分け処理をキャンセル
+  if (importedClassificationTimer !== null) {
+    clearTimeout(importedClassificationTimer);
+    importedClassificationTimer = null;
+  }
+
   if (!importedHistory.length) return;
+
+  // この下は既存の処理をそのまま残す
 
   const previous = importedHistory.pop();
   const index = findWordIndex(previous.entry);
