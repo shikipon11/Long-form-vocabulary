@@ -509,9 +509,11 @@ function selectImported(entry, status, card) {
     classifyImported(entry, status);
   }, 1000);
 }
+
 function classifyImported(entry, status) {
   const index = findWordIndex(entry);
 
+  // 取り消し用に変更前の状態を保存
   importedHistory.push({
     entry: { ...entry },
     previous: index >= 0 ? { ...words[index] } : null
@@ -535,8 +537,21 @@ function classifyImported(entry, status) {
   }
 
   importedIndex += 1;
-  saveBook();
+
+  // データだけ保存する（画面全体は再描画しない）
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(words)
+  );
+
+  // 仕分け画面だけ更新
   renderImportedWords();
+
+  // 全件終了したときだけ他の画面も更新
+  if (importedIndex >= importedWords.length) {
+    renderBook();
+    renderStudyCard();
+  }
 }
 
 function undoImportedClassification() {
