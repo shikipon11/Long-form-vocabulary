@@ -281,6 +281,7 @@ $("copyPrompt").addEventListener("click", async () => {
 // JSONの取り込み
 // ------------------------------
 
+
 function parseJson(raw) {
   let cleaned = String(raw ?? "").trim()
     .replace(/^```(?:json)?\s*/i, "")
@@ -302,7 +303,7 @@ function parseJson(raw) {
     .replace(/[“”＂]/g, '"')
     .replace(/[‘’]/g, "'");
 
-  // JSON文字列の外側にある不要なバックスラッシュを除去
+  // コピー時に混入した不要なバックスラッシュを除去
   function removeCopyEscapes(text) {
     let result = "";
     let inString = false;
@@ -332,12 +333,10 @@ function parseJson(raw) {
         continue;
       }
 
-      // 改行直前の不要なバックスラッシュを除去
       if (char === "\\" && (next === "\n" || next === "\r")) {
         continue;
       }
 
-      // [ や ] の前にある不要なバックスラッシュを除去
       if (char === "\\" && (next === "[" || next === "]")) {
         continue;
       }
@@ -349,6 +348,28 @@ function parseJson(raw) {
   }
 
   cleaned = removeCopyEscapes(cleaned);
+
+  // formsの文字列を配列に変換
+  // 例："forms":"are","be" → "forms":["are","be"]
+  cleaned = cleaned.replace(
+    /"forms"\s*:\s*((?:"(?:\\.|[^"\\])*"\s*(?:,\s*"(?:\\.|[^"\\])*"\s*)*?))(?=\s*,\s*"uncertain"\s*:)/g,
+    '"forms":[$1]'
+  );
+
+  // phrasesの配列の開始記号が欠けている場合に補う
+  // 例："phrases":{"word":...},{"word":...} }
+  if (/"phrases"\s*:\s*\{/.test(cleaned)) {
+    cleaned = cleaned.replace(
+      /("phrases"\s*:\s*)\{/,
+      "$1[{"
+    );
+
+    // 最後の熟語オブジェクトと全体の閉じカッコの間に ] を追加
+    cleaned = cleaned.replace(
+      /(\}\s*)\}\s*$/,
+      "$1] }"
+    );
+  }
 
   // JSONとして読み込む
   try {
@@ -367,11 +388,11 @@ function parseJson(raw) {
 
   throw new Error(
     "データを読み込めませんでした。\n\n" +
-    "コピーしたデータのJSON構造が正しくない可能性があります。\n\n" +
+    "コピーしたデータの形式が正しくない可能性があります。\n\n" +
     "次の点を確認してください。\n" +
     "・JSON形式のデータをコピーしているか\n" +
-    "・words と phrases が配列になっているか\n" +
-    "・forms が配列になっているか\n" +
+    "・words と phrases が正しく記述されているか\n" +
+    "・forms の配列が正しく記述されているか\n" +
     "・カッコやカンマ、引用符が正しく配置されているか\n\n" +
     "ChatGPTの回答では、コードブロック内のJSONだけをコピーして再度お試しください。"
   );
