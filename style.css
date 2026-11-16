@@ -833,3 +833,28 @@ body.study-mode .flashcard {
   background: linear-gradient(145deg, #fff0ee, #f9d8d4);
   border-color: #d77a72;
 }
+/* 単語追加：わかるを選択 */
+.imported-word-card.selected-known {
+  background: #e7f5ed;
+  border: 2px solid #65ad83;
+  transition: background 0.2s ease;
+}
+
+.imported-word-card.selected-known .known-button {
+  background: #28704a;
+  color: white;
+  box-shadow: 0 0 0 3px #bfe4cf;
+}
+
+/* 単語追加：わからないを選択 */
+.imported-word-card.selected-unknown {
+  background: #fff0ee;
+  border: 2px solid #d77a72;
+  transition: background 0.2s ease;
+}
+
+.imported-word-card.selected-unknown .unknown-button {
+  background: #ad4038;
+  color: white;
+  box-shadow: 0 0 0 3px #f3c6c2;
+}
