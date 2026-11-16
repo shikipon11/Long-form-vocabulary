@@ -682,6 +682,7 @@ $("flipCard").addEventListener("click", flipCard);
 // 単語の仕分け
 // ------------------------------
 
+
 function markCurrentWord(status) {
   const deck = getDeck();
 
@@ -700,28 +701,31 @@ function markCurrentWord(status) {
     index: currentCardIndex
   });
 
+  // 分類を変更
   words[index].status = status;
 
   const updatedDeck = getDeck();
 
-  // 現在のカードが絞り込み対象から外れた場合、
-  // 同じ位置にある次のカードを表示する
-  if (currentCardIndex >= updatedDeck.length) {
+  // 変更した単語がまだ学習対象に残っているか確認
+  const nextIndex = updatedDeck.findIndex(w =>
+    w.word.toLowerCase() === entry.word.toLowerCase() &&
+    Boolean(w.phrase) === Boolean(entry.phrase)
+  );
+
+  if (updatedDeck.length === 0) {
     currentCardIndex = 0;
+  } else if (nextIndex >= 0) {
+    // まだ対象に残っている場合は次の単語へ
+    currentCardIndex = (nextIndex + 1) % updatedDeck.length;
+  } else {
+    // 対象から外れた場合は同じ位置の次の単語へ
+    currentCardIndex = currentCardIndex % updatedDeck.length;
   }
 
   isFlipped = false;
 
   saveBook();
 }
-
-$("markKnown").addEventListener("click", () => {
-  markCurrentWord("known");
-});
-
-$("markUnknown").addEventListener("click", () => {
-  markCurrentWord("unknown");
-});
 
 // ------------------------------
 // 仕分けの取り消し
