@@ -891,9 +891,9 @@ function markCurrentWord(status) {
       classificationTimer = null;
 
       saveBook();
-    }, 250);
+    }, 100);
 
-  }, 450);
+  }, 350);
 }
 // ------------------------------
 // 仕分けの取り消し
