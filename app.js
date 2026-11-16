@@ -760,31 +760,33 @@ function renderStudyCard() {
     classifyHistory.length === 0;
 
   if (!deck.length) {
-    $("cardMeaning").classList.add("hidden");
-    $("flashcard").classList.remove("flipped");
+  // すべて仕分け終わったら最初から再開
+  if (sessionTotal > 0 && done >= sessionTotal) {
+    classifiedThisSession.clear();
+    lastClassification = null;
+    isFlipped = false;
 
-    $("markKnown").disabled = true;
-    $("markUnknown").disabled = true;
-    $("flipCard").disabled = true;
+    $("cardSide").textContent = "QUESTION";
+    $("studyMessage").textContent = "";
 
-    if (sessionTotal > 0 && done >= sessionTotal) {
-      $("cardSide").textContent = "COMPLETE";
-      $("cardWord").textContent = "仕分け完了！";
-      $("cardHint").textContent =
-        "すべての単語を分類しました";
-      $("studyMessage").textContent =
-        `${done}語すべての仕分けが終わりました！`;
-    } else {
-      $("cardSide").textContent = "NO WORDS";
-      $("cardWord").textContent = "単語がありません";
-      $("cardHint").textContent =
-        "単語を追加してください";
-      $("studyMessage").textContent = "";
-    }
-
+    renderStudyCard();
     return;
   }
 
+  $("cardMeaning").classList.add("hidden");
+  $("flashcard").classList.remove("flipped");
+
+  $("markKnown").disabled = true;
+  $("markUnknown").disabled = true;
+  $("flipCard").disabled = true;
+
+  $("cardSide").textContent = "NO WORDS";
+  $("cardWord").textContent = "単語がありません";
+  $("cardHint").textContent = "単語を追加してください";
+  $("studyMessage").textContent = "";
+
+  return;
+}
   $("markKnown").disabled = false;
   $("markUnknown").disabled = false;
   $("flipCard").disabled = false;
