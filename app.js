@@ -9,7 +9,6 @@ let words = loadBook();
 
 let importedWords = [];
 let importedIndex = 0;
-let importedHistory = [];
 let currentDeck = "all";
 let currentBookFilter = "all";
 let currentCardIndex = 0;
@@ -453,7 +452,6 @@ $("importJson").addEventListener("click", () => {
       throw new Error("取り込める単語がありませんでした。");
     }
     importedIndex = 0;
-    importedHistory = [];
     renderImportedWords();
    
     message.textContent =
@@ -511,11 +509,7 @@ function selectImported(entry, status, card) {
 function classifyImported(entry, status) {
   const index = findWordIndex(entry);
 
-  // 取り消し用に変更前の状態を保存
-  importedHistory.push({
-    entry: { ...entry },
-    previous: index >= 0 ? { ...words[index] } : null
-  });
+
 
   const savedEntry = {
     ...entry,
@@ -552,30 +546,6 @@ function classifyImported(entry, status) {
   }
 }
 
-function undoImportedClassification() {
-  // 実行待ちの仕分け処理をキャンセル
-  if (importedClassificationTimer !== null) {
-    clearTimeout(importedClassificationTimer);
-    importedClassificationTimer = null;
-  }
-
-  if (!importedHistory.length) return;
-
-  // この下は既存の処理をそのまま残す
-
-  const previous = importedHistory.pop();
-  const index = findWordIndex(previous.entry);
-
-  if (previous.previous) {
-    if (index >= 0) words[index] = previous.previous;
-  } else if (index >= 0) {
-    words.splice(index, 1);
-  }
-
-  importedIndex = Math.max(0, importedIndex - 1);
-  saveBook();
-  renderImportedWords();
-}
 
 function renderImportedWords() {
   const container = $("importedResults");
@@ -611,16 +581,6 @@ function renderImportedWords() {
       <p>読み込んだ ${importedWords.length} 語をすべて分類しました。</p>
     `;
     container.appendChild(complete);
-
-    const controls = document.createElement("div");
-    controls.className = "imported-controls";
-    const undoButton = document.createElement("button");
-    undoButton.className = "secondary";
-    undoButton.textContent = "↶ 最後の仕分けを取り消す";
-    undoButton.disabled = importedHistory.length === 0;
-    undoButton.addEventListener("click", undoImportedClassification);
-    controls.appendChild(undoButton);
-    container.appendChild(controls);
     return;
   }
 
@@ -660,15 +620,7 @@ card.querySelector(".known-button").addEventListener(
 );
   container.appendChild(card);
 
-  const controls = document.createElement("div");
-  controls.className = "imported-controls";
-  const undoButton = document.createElement("button");
-  undoButton.className = "secondary";
-  undoButton.textContent = "↶ ひとつ戻る";
-  undoButton.disabled = importedHistory.length === 0;
-  undoButton.addEventListener("click", undoImportedClassification);
-  controls.appendChild(undoButton);
-  container.appendChild(controls);
+
 }
 
 // ------------------------------
