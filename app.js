@@ -712,13 +712,12 @@ $("flashcard").addEventListener("click", () => {
 
 $("flipCard").addEventListener("click", flipCard);
 
+
 // ------------------------------
 // 単語の仕分け
 // ------------------------------
 
-
 function markCurrentWord(status) {
-  function markCurrentWord(status) {
   const deck = getDeck();
 
   if (!deck.length) return;
@@ -728,6 +727,7 @@ function markCurrentWord(status) {
 
   if (index < 0) return;
 
+  // 取り消し用に変更前の状態を保存
   classifyHistory.push({
     word: words[index].word,
     phrase: words[index].phrase,
@@ -741,7 +741,6 @@ function markCurrentWord(status) {
 
   isFlipped = false;
 
-  // 保存すると次の未分類単語が表示される
   saveBook();
 }
 
@@ -750,7 +749,6 @@ function markCurrentWord(status) {
 // ------------------------------
 
 function undoClassification() {
- function undoClassification() {
   if (!classifyHistory.length) return;
 
   const previous = classifyHistory.pop();
@@ -778,6 +776,14 @@ $("undoClassify").addEventListener(
   "click",
   undoClassification
 );
+
+$("markKnown").addEventListener("click", () => {
+  markCurrentWord("known");
+});
+
+$("markUnknown").addEventListener("click", () => {
+  markCurrentWord("unknown");
+});
 
 // ------------------------------
 // スワイプ操作
