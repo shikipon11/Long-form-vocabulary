@@ -852,8 +852,6 @@ function renderStudyCard() {
 }
   $("markKnown").disabled = false;
   $("markUnknown").disabled = false;
-  $("flipCard").disabled = false;
-
   const entry = deck[0];
 
   $("cardWord").textContent = entry.word;
