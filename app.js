@@ -737,17 +737,15 @@ function renderBook() {
 
 // 現在の分類条件に合う単語
 function getBaseDeck() {
-  return words.filter(word => {
-    if (currentDeck === "known") {
-      return word.status === "known";
-    }
+  if (currentDeck === "known") {
+    return words.filter(word => word.status === "known");
+  }
 
-    if (currentDeck === "unknown") {
-      return word.status !== "known";
-    }
+  if (currentDeck === "unknown") {
+    return words.filter(word => word.status !== "known");
+  }
 
-    return true;
-  });
+  return words;
 }
 
 // 単語を識別するためのキー
