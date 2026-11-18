@@ -788,12 +788,6 @@ document.querySelectorAll("[data-deck]").forEach(button => {
 
 // カード表示
 function renderStudyCard() {
-  console.log("words:", words.length);
-console.log("baseDeck:", getBaseDeck().length);
-console.log("deck:", getDeck().length);
-console.log("currentDeck:", currentDeck);
-console.log("classified:", classifiedThisSession.size);
-console.log("sessionTotal:", sessionTotal);
   const deck = getDeck();
   const done = classifiedThisSession.size;
     // 分類ボタンとカードの選択状態を更新
