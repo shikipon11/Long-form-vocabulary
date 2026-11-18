@@ -842,7 +842,6 @@ function renderStudyCard() {
 
   $("markKnown").disabled = true;
   $("markUnknown").disabled = true;
-  $("flipCard").disabled = true;
 
   $("cardSide").textContent = "NO WORDS";
   $("cardWord").textContent = "単語がありません";
@@ -881,10 +880,6 @@ $("cardPos").className =
     isFlipped
   );
 
-  $("flipCard").textContent = isFlipped
-    ? "英語に戻す"
-    : "意味を見る";
-
   $("studyMessage").textContent =
     entry.status === "known"
       ? "現在の分類：わかる"
@@ -904,7 +899,7 @@ $("flashcard").addEventListener("click", () => {
   flipCard();
 });
 
-$("flipCard").addEventListener("click", flipCard);
+
 
 
 // ------------------------------
@@ -933,7 +928,6 @@ function markCurrentWord(status) {
 
   $("markKnown").disabled = true;
   $("markUnknown").disabled = true;
-  $("flipCard").disabled = true;
   $("undoClassify").disabled = true;
 
   // 450ミリ秒後に背景色を消す
@@ -943,7 +937,6 @@ function markCurrentWord(status) {
 
     $("markKnown").disabled = true;
     $("markUnknown").disabled = true;
-    $("flipCard").disabled = true;
     $("undoClassify").disabled = true;
 
     // さらに250ミリ秒待ってから次の単語へ
